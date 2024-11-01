@@ -944,6 +944,28 @@ require('lazy').setup({
       end,
     },
   },
+  {
+    'mfussenegger/nvim-dap',
+    config = function()
+      vim.api.nvim_set_keymap('n', '<leader>tb', "<cmd>lua require('dap').toggle_breakpoint()<CR>", { noremap = true, silent = true })
+    end,
+  },
+  {
+    'mfussenegger/nvim-dap-python',
+    config = function()
+      require('dap-python').setup 'python3'
+      vim.api.nvim_set_keymap('n', '<leader>dn', "<cmd>lua require('dap-python').test_method()<CR>", { noremap = true, silent = true })
+      vim.api.nvim_set_keymap('n', '<leader>df', "<cmd>lua require('dap-python').test_class()<CR>", { noremap = true, silent = true })
+      vim.api.nvim_set_keymap('v', '<leader>ds', "<ESC><cmd>lua require('dap-python').debug_selection()<CR>", { noremap = true, silent = true })
+    end,
+  },
+  {
+    'rcarriga/nvim-dap-ui',
+    dependencies = {
+      'mfussenegger/nvim-dap',
+      'nvim-neotest/nvim-nio',
+    },
+  },
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
@@ -991,6 +1013,29 @@ require('lazy').setup({
     },
   },
 })
+
+-- Initialize nvim-dap-ui
+require('dapui').setup()
+
+-- Set up event listeners to automatically open/close dap-ui
+local dap, dapui = require 'dap', require 'dapui'
+dap.listeners.before.event_initialized['dapui_config'] = function()
+  dapui.open()
+end
+dap.listeners.before.event_terminated['dapui_config'] = function()
+  dapui.close()
+end
+dap.listeners.before.event_exited['dapui_config'] = function()
+  dapui.close()
+end
+
+-- Key mappings for dap-ui
+vim.api.nvim_set_keymap('n', '<leader>du', "<cmd>lua require('dapui').toggle()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>db', "<cmd>lua require('dap').toggle_breakpoint()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>dc', "<cmd>lua require('dap').continue()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>di', "<cmd>lua require('dap').step_into()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>do', "<cmd>lua require('dap').step_over()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>dO', "<cmd>lua require('dap').step_out()<CR>", { noremap = true, silent = true })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
