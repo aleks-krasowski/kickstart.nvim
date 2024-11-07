@@ -922,13 +922,15 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
+  -- jupyter plugin
   {
     'benlubas/molten-nvim',
     version = '^1.0.0', -- use version <2.0.0 to avoid breaking changes
     build = ':UpdateRemotePlugins',
     init = function()
       -- this is an example, not a default. Please see the readme for more configuration options
-      vim.g.molten_output_win_max_height = 12
+      vim.g.molten_output_win_max_height = 40
+      vim.g.molten_image_provider = 'image.nvim'
     end,
     config = function()
       vim.keymap.set('n', '<localleader>mi', ':MoltenInit<CR>', { silent = true, desc = 'Initialize the plugin' })
@@ -938,18 +940,57 @@ require('lazy').setup({
       vim.keymap.set('v', '<localleader>r', ':<C-u>MoltenEvaluateVisual<CR>gv', { silent = true, desc = 'evaluate visual selection' })
     end,
     dependencies = {
-      '3rd/image.nvim',
-      config = function()
-        -- ...
-      end,
+      {
+        '3rd/image.nvim',
+        config = function()
+          require('image').setup {
+            backend = 'kitty',
+            processor = 'magick_rock', -- or "magick_cli"
+            integrations = {
+              markdown = {
+                enabled = true,
+                clear_in_insert_mode = false,
+                download_remote_images = true,
+                only_render_image_at_cursor = false,
+                filetypes = { 'markdown', 'vimwiki' }, -- markdown extensions (ie. quarto) can go here
+              },
+              neorg = {
+                enabled = true,
+                filetypes = { 'norg' },
+              },
+              typst = {
+                enabled = true,
+                filetypes = { 'typst' },
+              },
+              html = {
+                enabled = false,
+              },
+              css = {
+                enabled = false,
+              },
+            },
+            max_width = 120,
+            max_height = 40,
+            max_width_window_percentage = nil,
+            max_height_window_percentage = 50,
+            window_overlap_clear_enabled = false, -- toggles images when windows are overlapped
+            window_overlap_clear_ft_ignore = { 'cmp_menu', 'cmp_docs', '' },
+            editor_only_render_when_focused = false, -- auto show/hide images when the editor gains/looses focus
+            tmux_show_only_in_active_window = false, -- auto show/hide images in the correct Tmux window (needs visual-activity off)
+            hijack_file_patterns = { '*.png', '*.jpg', '*.jpeg', '*.gif', '*.webp', '*.avif' }, -- render image files as images when opened
+          }
+        end,
+      },
     },
   },
+  -- debugger general
   {
     'mfussenegger/nvim-dap',
     config = function()
       vim.api.nvim_set_keymap('n', '<leader>tb', "<cmd>lua require('dap').toggle_breakpoint()<CR>", { noremap = true, silent = true })
     end,
   },
+  -- debugger for python
   {
     'mfussenegger/nvim-dap-python',
     config = function()
@@ -959,12 +1000,32 @@ require('lazy').setup({
       vim.api.nvim_set_keymap('v', '<leader>ds', "<ESC><cmd>lua require('dap-python').debug_selection()<CR>", { noremap = true, silent = true })
     end,
   },
+  -- debugging ui (start with <leader>du
   {
     'rcarriga/nvim-dap-ui',
     dependencies = {
       'mfussenegger/nvim-dap',
       'nvim-neotest/nvim-nio',
     },
+  },
+  -- remote connections (copy over nvim config and launch it)
+  {
+    'amitds1997/remote-nvim.nvim',
+    version = '*', -- Pin to GitHub releases
+    dependencies = {
+      'nvim-lua/plenary.nvim', -- For standard functions
+      'MunifTanjim/nui.nvim', -- To build the plugin UI
+      'nvim-telescope/telescope.nvim', -- For picking b/w different remote methods
+    },
+    config = true,
+  },
+  -- statusline at bottom
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      require 'lualine.evil_lualine'
+    end,
   },
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
