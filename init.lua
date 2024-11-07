@@ -209,6 +209,14 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
   command = 'set filetype=python',
 })
 
+local home = os.getenv 'HOME'
+local lua_version = '5.1'
+
+package.path = package.path .. string.format(';%s/.luarocks/share/lua/%s/?.lua', home, lua_version)
+package.path = package.path .. string.format(';%s/.luarocks/share/lua/%s/?/init.lua', home, lua_version)
+
+package.cpath = package.cpath .. string.format(';%s/.luarocks/lib/lua/%s/?.so', home, lua_version)
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
